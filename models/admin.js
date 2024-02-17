@@ -1,31 +1,31 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const userSchema = new mongoose.Schema({
-    email: {
+// Define the Admin schema
+const adminSchema = new mongoose.Schema({
+    username: {
         type: String,
         required: true,
-        unique: true,
-        lowercase: true
+        unique: true
     },
-    ktuid: {
+    email: {
         type: String,
         required: true,
         unique: true
     },
     password: {
         type: String,
-        required: true,
-        minlength:8
+        required: true
     }
 });
 
-userSchema.pre('save', async function (next) {
+adminSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(this.password, salt);
     next();
 });
 
-const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+const Admin = mongoose.model('Admin', adminSchema);
+
+module.exports = Admin;
