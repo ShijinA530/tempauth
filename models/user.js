@@ -16,7 +16,22 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        minlength:8
+        minlength: 8
+    },
+    name: {
+        type: String,
+        required: true
+    },
+    department: {
+        type: String,
+        required: true,
+        enum: ['CSE', 'EE', 'EC', 'ME', 'CE'] // Add your department options
+    },
+    year: {
+        type: Number,
+        required: true,
+        min: 2020,
+        max: 2023 // Adjust as needed
     }
 });
 

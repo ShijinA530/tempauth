@@ -1,8 +1,9 @@
-// Import Mongoose module
 const mongoose = require('mongoose');
 
-// Define candidate schema
 const candidateSchema = new mongoose.Schema({
+    candidateID: {
+        type:String
+    },
     firstName: {
         type: String,
         required: true
@@ -17,8 +18,26 @@ const candidateSchema = new mongoose.Schema({
     party: String
 });
 
-// Create Candidate model from schema
+// Define pre-save middleware to auto-increment candidateID
+// candidateSchema.pre('save', async function(next) {
+//     try {
+//         if (!this.isNew) { // If it's not a new candidate, exit middleware
+//             return next();
+//         }
+
+//         const count = await this.constructor.countDocuments();
+
+//         this.candidateID = count;
+
+//         next();
+//     } catch (error) {
+//         next(error);
+//     }
+// });
+
+
+
 const Candidate = mongoose.model('Candidate', candidateSchema);
 
-// Export Candidate model
+
 module.exports = Candidate;
