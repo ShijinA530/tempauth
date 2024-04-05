@@ -10,5 +10,9 @@ router.post('/admin',authController.admin_login_post);
 router.post('/voter-add',authController.voter_add_post);
 router.post('/candidate-delete',authController.candidate_delete_post);
 router.get('/voter',authController.voter_get);
+router.get('/submitcandidate',authController.submit_candidate_get);
+router.post('/po-signup', authController.po_signup_post);
+router.post('/po-login', authController.po_login_post);
+
 
 module.exports = router;

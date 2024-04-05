@@ -1,6 +1,7 @@
 const User = require('../models/user');
 const Candidate = require('../models/candidate');
 const Admin = require('../models/admin');
+const Po = require('../models/po');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 const { generateRandomPassword } = require('../utils/passwordGenerator');
@@ -46,6 +47,32 @@ module.exports.login_post = async (req, res) => {
 
         // Send a response to the client
         // res.status(200).json({ message: 'Login successful', user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
+
+module.exports.admin_login_post = async (req, res) => {
+    const { email, password } = req.body;
+    console.log(req.body);
+
+    try {
+        const admin = await Admin.findOne({ email });
+
+        if (!admin) {
+            return res.status(400).json({ error: 'Admin does not exist.' });
+        }
+        const passwordMatch = await bcrypt.compare(password, admin.password);
+
+        if (!passwordMatch) {
+            return res.status(400).json({ error: 'Invalid credentials' });
+        }
+        const token = jwt.sign({ adminId: admin._id }, 'your_secret_key', { expiresIn: '1h' });
+
+        res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); 
+
+        res.status(200).json({ message: 'Login successful', admin });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
@@ -153,33 +180,78 @@ module.exports.voter_add_post = async (req, res) => {
   }
 };
 
-
-module.exports.admin_login_post = async (req, res) => {
+exports.po_login_post = async (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
+  
+    try {
+      const po = await Po.findOne({ email });
+  
+      if (!po) {
+        return res.status(400).json({ error: 'PO does not exist.' });
+      }
+  
+      const passwordMatch = await bcrypt.compare(password, po.password);
+  
+      if (!passwordMatch) {
+        return res.status(400).json({ error: 'Invalid credentials' });
+      }
+  
+      const token = jwt.sign({ poId: po._id }, 'your_secret_key', { expiresIn: '1h' });
+  
+      res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 });
+  
+      res.status(200).json({ message: 'Login successful', po });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
+    }
+};
+
+module.exports.po_signup_post = async (req, res) => {
+    const { email, password } = req.body;
 
     try {
-        const admin = await Admin.findOne({ email });
+        const existingPo = await Po.findOne({ email });
 
-        if (!admin) {
-            return res.status(400).json({ error: 'Admin does not exist.' });
+        if (existingPo) {
+            return res.status(400).json({ error: 'PO already exists with this email.' });
         }
-        const passwordMatch = await bcrypt.compare(password, admin.password);
 
-        if (!passwordMatch) {
-            return res.status(400).json({ error: 'Invalid credentials' });
-        }
-        const token = jwt.sign({ adminId: admin._id }, 'your_secret_key', { expiresIn: '1h' });
-
-        res.cookie('jwt', token, { httpOnly: true, maxAge: 3600000 }); 
-
-        res.status(200).json({ message: 'Login successful', admin });
+        const newPo = await Po.create({ email, password });
+        res.status(201).json({ po: newPo });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Server error' });
     }
 };
 
+
+module.exports.submit_candidate_get = async (req, res) => {
+    try {
+        // Aggregate candidates by election type
+        const candidatesByElectionType = await Candidate.aggregate([
+            // Group candidates by election type and accumulate candidate names
+            {
+                $group: {
+                    _id: '$electionType', // Group by election type
+                    candidates: { $push: { $concat: ['$firstName', ' ', '$lastName'] } } // Concatenate first and last name
+                }
+            }
+        ]);
+
+        // Construct the desired JSON format
+        const candidatesJson = candidatesByElectionType.reduce((json, { _id, candidates }) => {
+            json[_id] = candidates;
+            return json;
+        }, {});
+
+        // Send the JSON response
+        res.json(candidatesJson);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};
 
 // delete all collection
 
