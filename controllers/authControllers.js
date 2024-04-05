@@ -25,7 +25,7 @@ module.exports.login_post = async (req, res) => {
     try {
         // Assuming User model is imported properly
         const user = await User.findOne({ email });
-
+        
         if (!user) {
             return res.status(400).json({ error: 'User does not exist.' });
         }
@@ -39,8 +39,7 @@ module.exports.login_post = async (req, res) => {
         const token = jwt.sign({ userId: user._id }, 'eth-voting', { expiresIn: '1h' });
 
         // Set the JWT token as a cookie
-        res.json({ token }); // 1 hour expiration time
-
+        res.status(200).json({ email,token }); // 1 hour expiration time
         // Log the cookie to console for testing
         console.log('JWT token sent to the client:', token);
 
@@ -156,7 +155,7 @@ module.exports.voter_add_post = async (req, res) => {
 
 module.exports.admin_login_post = async (req, res) => {
     const { email, password } = req.body;
-    console.log(req.body);
+    console.log(email, password);
 
     try {
         const admin = await Admin.findOne({ email });

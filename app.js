@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: 'http://localhost:5173' }));
 
-mongoose.connect('mongodb+srv://temp:temp123@jwt-auth.iow4rvc.mongodb.net/De-vote', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://temp:temp123@jwt-auth.iow4rvc.mongodb.net/De-vote')
     .then(() => app.listen(3000))
     .catch((err) => console.log(err));
 
